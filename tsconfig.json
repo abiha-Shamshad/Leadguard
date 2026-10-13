@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2023"],
+    "types": ["node"],
+    "strict": true,
+    "noUncheckedIndexedAccess": false,
+    "noImplicitOverride": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": false,
+    "baseUrl": ".",
+    "paths": {
+      "@leadguard/domain": ["packages/domain/src/index.ts"],
+      "@leadguard/db": ["packages/db/src/index.ts"],
+      "@leadguard/adapters": ["packages/adapters/src/index.ts"],
+      "@leadguard/contracts": ["packages/contracts/src/index.ts"]
+    }
+  },
+  "include": ["apps/*/tsup.config.ts", "apps/*/src/**/*.ts", "apps/*/test/**/*.ts", "packages/*/src/**/*.ts", "packages/*/test/**/*.ts", "scripts/**/*.ts"]
+}

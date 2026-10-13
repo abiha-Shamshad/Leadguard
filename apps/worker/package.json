@@ -1,0 +1,23 @@
+{
+  "name": "@leadguard/worker",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "start": "node dist/main.js",
+    "build": "tsup",
+    "test": "node --import tsx --test --test-concurrency=1 test/*.test.ts"
+  },
+  "dependencies": {
+    "@leadguard/adapters": "workspace:*",
+    "@leadguard/contracts": "workspace:*",
+    "@leadguard/db": "workspace:*",
+    "@leadguard/domain": "workspace:*",
+    "bullmq": "6.3.12",
+    "fflate": "0.8.3",
+    "ioredis": "5.11.1",
+    "luxon": "3.7.2",
+    "pg": "8.23.1"
+  }
+}

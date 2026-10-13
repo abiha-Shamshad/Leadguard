@@ -1,0 +1,17 @@
+{
+  "name": "@leadguard/contracts",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./api-examples.json": "./api-examples.json"
+  },
+  "scripts": {
+    "test": "node --import tsx --test test/*.test.ts"
+  },
+  "dependencies": {
+    "@leadguard/domain": "workspace:*",
+    "zod": "4.6.5"
+  }
+}

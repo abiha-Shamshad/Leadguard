@@ -1,0 +1,92 @@
+name: ci
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Static checks: types for every package, the spec consistency checker, and dependency audit.
+  static:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version-file: .nvmrc }
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - name: Typecheck (backend packages + web)
+        run: pnpm typecheck
+      - name: Specification consistency (CHK-01..12)
+        run: python3 docs/spec/tools/check_spec.py
+      - name: Dependency audit (fail on high/critical)
+        run: pnpm audit --audit-level high
+
+  # Unit tests, delivered DB checks, API end-to-end, 52-operation contract conformance and the security suite.
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:17
+        env: { POSTGRES_PASSWORD: postgres, POSTGRES_DB: leadguard }
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version-file: .nvmrc }
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - name: Domain unit tests (business time, signatures, transitions, policy)
+        run: pnpm --filter @leadguard/domain test
+      - name: Contract registry tests
+        run: pnpm --filter @leadguard/contracts test
+      - name: Worker unit tests
+        run: pnpm --filter @leadguard/worker test
+      - name: Delivered database checks (DB-01..DB-19) on migrated schema
+        run: pnpm --filter @leadguard/db test
+      - name: API end-to-end, contract conformance (52 operations) and security suite
+        run: pnpm --filter @leadguard/api test
+        env:
+          TEST_ADMIN_DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+      - name: Build bundles and smoke-test the built api + worker
+        run: pnpm smoke
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: contract-conformance, path: docs/evidence/contract-conformance.md }
+
+  # Web app: unit tests, production build, and Playwright end-to-end at 360 px and 1280 px against a live stack.
+  web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version-file: .nvmrc }
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - name: Web unit tests (input patterns)
+        run: pnpm --filter @leadguard/web test
+      - name: Production build
+        run: pnpm --filter @leadguard/web build
+      - name: Install Playwright Chromium
+        run: pnpm --filter @leadguard/web exec playwright install --with-deps chromium
+      - name: Start backend stack and web app
+        run: |
+          pnpm dev:stack > stack.log 2>&1 &
+          pnpm --filter @leadguard/web start > web.log 2>&1 &
+          for i in $(seq 1 90); do curl -sf localhost:3001/internal/v1/health >/dev/null && curl -sf localhost:3000/sign-in >/dev/null && break; sleep 2; done
+      - name: Playwright end-to-end (desktop + phone)
+        run: pnpm --filter @leadguard/web test:e2e
+        env: { PW_CHANNEL: '' }
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with: { name: playwright-results, path: "apps/web/test-results\nstack.log\nweb.log" }

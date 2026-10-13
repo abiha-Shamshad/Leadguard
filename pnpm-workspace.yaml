@@ -1,0 +1,12 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+allowBuilds:
+  "@embedded-postgres/windows-x64": true
+  "@embedded-postgres/linux-x64": true
+  "@embedded-postgres/darwin-arm64": true
+  esbuild: true
+  msgpackr-extract: true
+overrides:
+  # GHSA-g7r4-m6w7-qqqr (low): esbuild <0.28.1 via tsup. 0.28.2 is the version tsx already uses.
+  esbuild: 0.28.2

@@ -1,0 +1,3456 @@
+[
+  {
+    "id": "API-001",
+    "method": "GET",
+    "path": "/internal/v1/health",
+    "title": "Service health",
+    "entitlement": "none",
+    "request": null,
+    "success": {
+      "status": 200,
+      "body": {
+        "status": "ready",
+        "checks": {
+          "postgres": "ok",
+          "redis": "ok",
+          "outbox_lag_seconds": 2,
+          "oldest_pending_timer_seconds": 14
+        },
+        "version": "1.1.0"
+      }
+    },
+    "extra": [
+      {
+        "label": "Degraded but still serving (Redis down)",
+        "status": 200,
+        "body": {
+          "status": "degraded",
+          "checks": {
+            "postgres": "ok",
+            "redis": "unavailable",
+            "outbox_lag_seconds": 95,
+            "oldest_pending_timer_seconds": 140
+          },
+          "version": "1.1.0"
+        }
+      }
+    ],
+    "error": {
+      "status": 503,
+      "body": {
+        "status": "unavailable",
+        "checks": {
+          "postgres": "unavailable"
+        },
+        "version": "1.1.0"
+      }
+    },
+    "statuses": [
+      200,
+      503
+    ]
+  },
+  {
+    "id": "API-002",
+    "method": "GET",
+    "path": "/api/v1/me",
+    "title": "Current user and memberships",
+    "entitlement": "read",
+    "request": null,
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "user": {
+            "id": "019a2b27-abca-700f-a4be-ca654d3a0312",
+            "name": "Chris Patel",
+            "email": "chris@acmeplumbing.com"
+          },
+          "active_org": {
+            "id": "019a2b75-de36-7e2f-80ab-eb21aca45e7a",
+            "name": "Acme Plumbing",
+            "role": "owner",
+            "time_zone": "America/Chicago"
+          },
+          "organizations": [
+            {
+              "id": "019a2b75-de36-7e2f-80ab-eb21aca45e7a",
+              "name": "Acme Plumbing",
+              "role": "owner"
+            }
+          ],
+          "permissions": [
+            "org.manage",
+            "members.manage",
+            "sources.manage",
+            "leads.read",
+            "leads.write",
+            "leads.assign",
+            "rules.manage",
+            "dashboard.read",
+            "billing.manage",
+            "exports.create",
+            "support.grant"
+          ],
+          "subscription_state": "trialing",
+          "setup_complete": false
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 401,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "AUTHENTICATION_REQUIRED",
+          "message": "Your session has expired. Sign in again.",
+          "retryable": false,
+          "details": {}
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      401
+    ]
+  },
+  {
+    "id": "API-003",
+    "method": "POST",
+    "path": "/api/v1/organizations",
+    "title": "Create organization",
+    "entitlement": "bootstrap",
+    "request": {
+      "name": "Acme Plumbing",
+      "time_zone": "America/Chicago",
+      "country": "US",
+      "business_hours": [
+        {
+          "weekday": "mon",
+          "open": "08:00",
+          "close": "18:00"
+        },
+        {
+          "weekday": "tue",
+          "open": "08:00",
+          "close": "18:00"
+        },
+        {
+          "weekday": "wed",
+          "open": "08:00",
+          "close": "18:00"
+        },
+        {
+          "weekday": "thu",
+          "open": "08:00",
+          "close": "18:00"
+        },
+        {
+          "weekday": "fri",
+          "open": "08:00",
+          "close": "18:00"
+        }
+      ]
+    },
+    "success": {
+      "status": 201,
+      "body": {
+        "success": true,
+        "message": "Organization created.",
+        "data": {
+          "org": {
+            "id": "019a2b75-de36-7e2f-80ab-eb21aca45e7a",
+            "name": "Acme Plumbing",
+            "time_zone": "America/Chicago",
+            "country": "US"
+          },
+          "membership": {
+            "role": "owner"
+          },
+          "subscription": {
+            "state": "setup_pending",
+            "trial_starts": "after_first_verified_source"
+          },
+          "follow_up_policy": {
+            "version": 1,
+            "first_response_minutes": 15
+          },
+          "setup": {
+            "next_step": "connect_source"
+          }
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 400,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "VALIDATION_FAILED",
+          "message": "Check the highlighted fields.",
+          "retryable": false,
+          "details": {
+            "fields": {
+              "time_zone": "Use a valid IANA time zone such as America/Chicago."
+            }
+          }
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      201,
+      200,
+      400,
+      401,
+      409,
+      422
+    ]
+  },
+  {
+    "id": "API-004",
+    "method": "GET",
+    "path": "/api/v1/organizations/current",
+    "title": "Read organization",
+    "entitlement": "read",
+    "request": null,
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "id": "019a2b75-de36-7e2f-80ab-eb21aca45e7a",
+          "name": "Acme Plumbing",
+          "time_zone": "America/Chicago",
+          "country": "US",
+          "business_hours": {
+            "version": 2,
+            "days": [
+              {
+                "weekday": "mon",
+                "open": "08:00",
+                "close": "18:00"
+              },
+              {
+                "weekday": "sat",
+                "open": "09:00",
+                "close": "13:00"
+              }
+            ],
+            "holidays": [
+              "2026-11-26",
+              "2026-12-25"
+            ]
+          },
+          "setup": {
+            "org_created": true,
+            "source_verified": true,
+            "team_invited": false,
+            "complete": false
+          },
+          "plan_id": "team",
+          "subscription_state": "trialing",
+          "limits": {
+            "members": {
+              "used": 2,
+              "max": 10
+            },
+            "sources": {
+              "used": 2,
+              "max": 3
+            },
+            "leads_this_month": {
+              "used": 38,
+              "max": 1000
+            }
+          },
+          "version": 4
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 404,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "NOT_FOUND",
+          "message": "Organization not found.",
+          "retryable": false,
+          "details": {}
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      401,
+      404
+    ]
+  },
+  {
+    "id": "API-005",
+    "method": "PATCH",
+    "path": "/api/v1/organizations/current",
+    "title": "Update organization",
+    "entitlement": "setup",
+    "request": {
+      "expected_version": 4,
+      "time_zone": "America/Denver"
+    },
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "message": "Organization updated.",
+        "data": {
+          "id": "019a2b75-de36-7e2f-80ab-eb21aca45e7a",
+          "time_zone": "America/Denver",
+          "version": 5,
+          "recompute": {
+            "open_leads": 17,
+            "status": "queued"
+          }
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 409,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "VERSION_CONFLICT",
+          "message": "Settings were changed by someone else. Reload and try again.",
+          "retryable": false,
+          "details": {
+            "current_version": 5
+          }
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      400,
+      403,
+      409,
+      423
+    ]
+  },
+  {
+    "id": "API-006",
+    "method": "PUT",
+    "path": "/api/v1/organizations/current/business-hours",
+    "title": "Replace business hours",
+    "entitlement": "setup",
+    "request": {
+      "expected_version": 2,
+      "days": [
+        {
+          "weekday": "mon",
+          "open": "07:30",
+          "close": "18:00"
+        },
+        {
+          "weekday": "tue",
+          "open": "07:30",
+          "close": "18:00"
+        },
+        {
+          "weekday": "sat",
+          "open": null,
+          "close": null
+        }
+      ],
+      "holidays": [
+        "2026-11-26",
+        "2026-12-25"
+      ]
+    },
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "message": "Business hours saved.",
+        "data": {
+          "business_hours_version": 3,
+          "effective_at": "2026-10-14T15:42:11Z",
+          "open_leads_recomputed": "queued"
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 400,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "VALIDATION_FAILED",
+          "message": "Opening time must be before closing time.",
+          "retryable": false,
+          "details": {
+            "fields": {
+              "days[1].close": "Must be after 07:30."
+            }
+          }
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      400,
+      403,
+      409
+    ]
+  },
+  {
+    "id": "API-007",
+    "method": "GET",
+    "path": "/api/v1/members",
+    "title": "List members",
+    "entitlement": "read",
+    "request": null,
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "items": [
+            {
+              "user_id": "019a2b27-abca-700f-a4be-ca654d3a0312",
+              "name": "Chris Patel",
+              "email": "chris@acmeplumbing.com",
+              "role": "owner",
+              "status": "active",
+              "open_leads": 4
+            },
+            {
+              "user_id": "019a2b60-717d-7b2a-b059-d6ef5efdcaf8",
+              "name": "Maria Lopez",
+              "email": "maria@acmeplumbing.com",
+              "role": "member",
+              "status": "active",
+              "open_leads": 9
+            },
+            {
+              "invitation_id": "019a2bff-a1b5-7732-91d9-173c11d4e73f",
+              "email": "sam@acmeplumbing.com",
+              "role": "member",
+              "status": "invited",
+              "expires_at": "2026-10-21T15:42:11Z"
+            }
+          ],
+          "next_cursor": null
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 403,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "AUTHORIZATION_DENIED",
+          "message": "You do not have permission to view the team.",
+          "retryable": false,
+          "details": {}
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      401,
+      403
+    ]
+  },
+  {
+    "id": "API-008",
+    "method": "POST",
+    "path": "/api/v1/invitations",
+    "title": "Invite member",
+    "entitlement": "setup",
+    "request": {
+      "email": "sam@acmeplumbing.com",
+      "role": "member"
+    },
+    "success": {
+      "status": 201,
+      "body": {
+        "success": true,
+        "message": "Invitation sent.",
+        "data": {
+          "invitation_id": "019a2bff-a1b5-7732-91d9-173c11d4e73f",
+          "email": "sam@acmeplumbing.com",
+          "role": "member",
+          "status": "pending",
+          "expires_at": "2026-10-21T15:42:11Z",
+          "email_delivery": "queued"
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 422,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "PLAN_LIMIT_REACHED",
+          "message": "Your plan allows 10 team members. Remove a member or change plan.",
+          "retryable": false,
+          "details": {
+            "limit": "members",
+            "used": 10,
+            "max": 10
+          }
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      201,
+      400,
+      403,
+      409,
+      422,
+      423
+    ]
+  },
+  {
+    "id": "API-009",
+    "method": "POST",
+    "path": "/api/v1/invitations/accept",
+    "title": "Accept invitation",
+    "entitlement": "bootstrap",
+    "request": {
+      "token": "lgi_7d3f...redacted"
+    },
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "message": "You joined Acme Plumbing.",
+        "data": {
+          "org": {
+            "id": "019a2b75-de36-7e2f-80ab-eb21aca45e7a",
+            "name": "Acme Plumbing"
+          },
+          "membership": {
+            "role": "member",
+            "status": "active"
+          }
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 410,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "INVITATION_EXPIRED",
+          "message": "This invitation has expired. Ask your manager to send a new one.",
+          "retryable": false,
+          "details": {}
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      400,
+      403,
+      410
+    ]
+  },
+  {
+    "id": "API-010",
+    "method": "PATCH",
+    "path": "/api/v1/members/{memberId}",
+    "title": "Change member role",
+    "entitlement": "control",
+    "request": {
+      "expected_version": 2,
+      "role": "manager"
+    },
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "message": "Role updated.",
+        "data": {
+          "user_id": "019a2b60-717d-7b2a-b059-d6ef5efdcaf8",
+          "role": "manager",
+          "version": 3
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 422,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "LAST_OWNER",
+          "message": "An organization must keep at least one owner.",
+          "retryable": false,
+          "details": {}
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      403,
+      404,
+      409,
+      422
+    ]
+  },
+  {
+    "id": "API-011",
+    "method": "POST",
+    "path": "/api/v1/members/{memberId}/deactivate",
+    "title": "Deactivate member",
+    "entitlement": "control",
+    "request": {
+      "reassign_to": "019a2b27-abca-700f-a4be-ca654d3a0312",
+      "reason": "Left the company"
+    },
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "message": "Member deactivated.",
+        "data": {
+          "user_id": "019a2b60-717d-7b2a-b059-d6ef5efdcaf8",
+          "status": "deactivated",
+          "leads_reassigned": 9,
+          "access_removed": true
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 404,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "NOT_FOUND",
+          "message": "Member not found.",
+          "retryable": false,
+          "details": {}
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      403,
+      404,
+      422
+    ]
+  },
+  {
+    "id": "API-012",
+    "method": "GET",
+    "path": "/api/v1/sources",
+    "title": "List sources",
+    "entitlement": "read",
+    "request": null,
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "items": [
+            {
+              "id": "019a2b21-2c94-7b5a-b86a-d61bf3ee110c",
+              "name": "Website contact form",
+              "type": "web_form_webhook",
+              "status": "verified",
+              "last_event_at": "2026-10-14T15:42:10Z",
+              "verified_at": "2026-10-10T18:03:44Z",
+              "events_24h": {
+                "accepted": 6,
+                "duplicate": 1,
+                "rejected": 0
+              }
+            },
+            {
+              "id": "019a2bff-3594-7d17-b29f-d05ed26570b5",
+              "name": "Office phone line",
+              "type": "call_webhook",
+              "status": "failing",
+              "last_event_at": "2026-10-13T21:10:02Z",
+              "last_error": {
+                "reason": "SIGNATURE_INVALID",
+                "at": "2026-10-14T14:01:12Z",
+                "count": 3
+              }
+            }
+          ]
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 403,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "AUTHORIZATION_DENIED",
+          "message": "Only owners and managers can manage sources.",
+          "retryable": false,
+          "details": {}
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      403
+    ]
+  },
+  {
+    "id": "API-013",
+    "method": "POST",
+    "path": "/api/v1/sources",
+    "title": "Create source",
+    "entitlement": "setup",
+    "request": {
+      "type": "web_form_webhook",
+      "name": "Website contact form",
+      "field_mapping": {
+        "name": "full_name",
+        "email": "email",
+        "phone": "phone",
+        "message": "comments"
+      }
+    },
+    "success": {
+      "status": 201,
+      "body": {
+        "success": true,
+        "message": "Source created. Copy the secret now; it will not be shown again.",
+        "data": {
+          "source": {
+            "id": "019a2b21-2c94-7b5a-b86a-d61bf3ee110c",
+            "type": "web_form_webhook",
+            "status": "draft"
+          },
+          "endpoint_url": "https://api.leadguard.io/ingest/v1/forms/sk_live_4f8a2c91",
+          "signing_secret": "whsec_9b1e...shown_once",
+          "signature": {
+            "header": "X-LeadGuard-Signature",
+            "algorithm": "HMAC-SHA256",
+            "signed_payload": "{timestamp}.{raw_body}"
+          },
+          "next_step": "send_test_event"
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [
+      {
+        "label": "Replay with the same Idempotency-Key (secret is never replayed)",
+        "status": 200,
+        "body": {
+          "success": true,
+          "message": "Source already created. The secret is shown only once; rotate it if it was not copied.",
+          "data": {
+            "source": {
+              "id": "019a2b21-2c94-7b5a-b86a-d61bf3ee110c",
+              "type": "web_form_webhook",
+              "status": "draft"
+            },
+            "endpoint_url": "https://api.leadguard.io/ingest/v1/forms/sk_live_4f8a2c91",
+            "signing_secret": null,
+            "secret_available": false,
+            "next_step": "rotate_secret_if_not_copied"
+          },
+          "meta": {
+            "api_version": "v1",
+            "request_id": "req_01J9X4B7M2",
+            "timestamp": "2026-10-14T15:42:11Z"
+          }
+        }
+      }
+    ],
+    "error": {
+      "status": 422,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "SOURCE_TYPE_NOT_ENABLED",
+          "message": "Call sources are enabled only after the provider is verified for your account.",
+          "retryable": false,
+          "details": {
+            "type": "call_webhook"
+          }
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      201,
+      200,
+      400,
+      403,
+      422,
+      423
+    ]
+  },
+  {
+    "id": "API-014",
+    "method": "GET",
+    "path": "/api/v1/sources/{sourceId}",
+    "title": "Read source and verification state",
+    "entitlement": "read",
+    "request": null,
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "id": "019a2b21-2c94-7b5a-b86a-d61bf3ee110c",
+          "name": "Website contact form",
+          "type": "web_form_webhook",
+          "status": "testing",
+          "last_event_at": "2026-10-14T15:42:10Z",
+          "verified_at": "2026-10-10T18:03:44Z",
+          "events_24h": {
+            "accepted": 6,
+            "duplicate": 1,
+            "rejected": 0
+          },
+          "verification": {
+            "started_at": "2026-10-14T15:30:00Z",
+            "expires_at": "2026-10-14T15:45:00Z",
+            "steps": [
+              {
+                "step": "endpoint_reachable",
+                "state": "passed"
+              },
+              {
+                "step": "signature_valid",
+                "state": "failed",
+                "detail": "Signature did not match. Check the signing secret in your form tool."
+              },
+              {
+                "step": "fields_mapped",
+                "state": "not_reached"
+              },
+              {
+                "step": "lead_created",
+                "state": "not_reached"
+              }
+            ]
+          }
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 404,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "NOT_FOUND",
+          "message": "Source not found.",
+          "retryable": false,
+          "details": {}
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      404
+    ]
+  },
+  {
+    "id": "API-015",
+    "method": "POST",
+    "path": "/api/v1/sources/{sourceId}/test-event",
+    "title": "Start source verification",
+    "entitlement": "setup",
+    "request": {
+      "window_minutes": 15
+    },
+    "success": {
+      "status": 202,
+      "body": {
+        "success": true,
+        "message": "Waiting for your test event.",
+        "data": {
+          "source_id": "019a2b21-2c94-7b5a-b86a-d61bf3ee110c",
+          "status": "testing",
+          "verification_id": "019a2ba6-ff69-7a44-a21d-744a5ee3585e",
+          "expires_at": "2026-10-14T15:57:11Z",
+          "instructions": "Submit your website form once with a real-looking enquiry. It will appear in your inbox marked TEST."
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 409,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "SOURCE_DISABLED",
+          "message": "Enable this source before testing it.",
+          "retryable": false,
+          "details": {}
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      202,
+      403,
+      404,
+      409
+    ]
+  },
+  {
+    "id": "API-016",
+    "method": "GET",
+    "path": "/api/v1/sources/{sourceId}/events",
+    "title": "Source delivery log",
+    "entitlement": "read",
+    "request": null,
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "items": [
+            {
+              "event_id": "019a2b62-7626-7ac1-a47c-8c2db24b73ec",
+              "received_at": "2026-10-14T15:42:10Z",
+              "outcome": "accepted",
+              "lead_id": "019a2baa-c642-761d-8dea-0c9e4b02af72",
+              "dedupe_key": "form:wpf_entry_8841"
+            },
+            {
+              "event_id": "019a2b10-04ae-7638-a9e9-fa1c0986df63",
+              "received_at": "2026-10-14T15:42:41Z",
+              "outcome": "duplicate",
+              "lead_id": "019a2baa-c642-761d-8dea-0c9e4b02af72",
+              "dedupe_key": "form:wpf_entry_8841"
+            },
+            {
+              "event_id": "019a2b1d-c6ab-73f6-b6fe-9c2cbdfce270",
+              "received_at": "2026-10-14T13:05:09Z",
+              "outcome": "rejected",
+              "reason": "SIGNATURE_INVALID",
+              "lead_id": null
+            }
+          ],
+          "next_cursor": "c_eyJrIjoiMjAyNi0xMC0xNCJ9"
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:43:00Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 404,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "NOT_FOUND",
+          "message": "Source not found.",
+          "retryable": false,
+          "details": {}
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      404
+    ]
+  },
+  {
+    "id": "API-017",
+    "method": "POST",
+    "path": "/api/v1/sources/{sourceId}/rotate-secret",
+    "title": "Rotate signing secret",
+    "entitlement": "setup",
+    "request": {},
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "message": "New secret created. Update your form tool within 24 hours.",
+        "data": {
+          "source_id": "019a2b21-2c94-7b5a-b86a-d61bf3ee110c",
+          "signing_secret": "whsec_c41d...shown_once",
+          "previous_secret_valid_until": "2026-10-15T15:42:11Z"
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 422,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "NOT_APPLICABLE",
+          "message": "Embed sources do not use a signing secret.",
+          "retryable": false,
+          "details": {}
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      403,
+      404,
+      422
+    ]
+  },
+  {
+    "id": "API-018",
+    "method": "POST",
+    "path": "/api/v1/sources/{sourceId}/disable",
+    "title": "Disable source",
+    "entitlement": "control",
+    "request": {
+      "reason": "Replaced by new form"
+    },
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "message": "Source disabled. New events will be rejected.",
+        "data": {
+          "source_id": "019a2b21-2c94-7b5a-b86a-d61bf3ee110c",
+          "status": "disabled",
+          "disabled_at": "2026-10-14T15:42:11Z"
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 403,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "AUTHORIZATION_DENIED",
+          "message": "Only owners and managers can disable sources.",
+          "retryable": false,
+          "details": {}
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      403,
+      404
+    ]
+  },
+  {
+    "id": "API-019",
+    "method": "POST",
+    "path": "/api/v1/sources/{sourceId}/enable",
+    "title": "Re-enable source",
+    "entitlement": "setup",
+    "request": {},
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "message": "Source enabled. Send a test enquiry to reconnect it.",
+        "data": {
+          "source_id": "019a2b21-2c94-7b5a-b86a-d61bf3ee110c",
+          "status": "testing",
+          "next_step": "send_test_event"
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 423,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "SUBSCRIPTION_INACTIVE",
+          "message": "Reactivate your subscription before enabling sources.",
+          "retryable": false,
+          "details": {
+            "state": "read_only"
+          }
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      403,
+      404,
+      423
+    ]
+  },
+  {
+    "id": "API-020",
+    "method": "POST",
+    "path": "/ingest/v1/forms/{sourceKey}",
+    "title": "Receive website form event",
+    "entitlement": "ingest",
+    "request": {
+      "entry_id": "wpf_entry_8841",
+      "submitted_at": "2026-10-14T15:42:10Z",
+      "full_name": "Dana Morales",
+      "email": "dana.morales@example.com",
+      "phone": "(512) 555-0142",
+      "comments": "Water heater leaking, need someone today.",
+      "service": "plumbing",
+      "zip": "78704"
+    },
+    "success": {
+      "status": 201,
+      "body": {
+        "accepted": true,
+        "outcome": "lead_created",
+        "event_id": "019a2b62-7626-7ac1-a47c-8c2db24b73ec",
+        "lead_id": "019a2baa-c642-761d-8dea-0c9e4b02af72",
+        "duplicate": false,
+        "request_id": "req_01J9X4B7M2"
+      }
+    },
+    "extra": [
+      {
+        "label": "Duplicate delivery result (same entry_id)",
+        "status": 200,
+        "body": {
+          "accepted": true,
+          "outcome": "lead_created",
+          "event_id": "019a2b62-7626-7ac1-a47c-8c2db24b73ec",
+          "lead_id": "019a2baa-c642-761d-8dea-0c9e4b02af72",
+          "duplicate": true,
+          "request_id": "req_01J9X4B7M2"
+        }
+      },
+      {
+        "label": "Repeat enquiry linked to an open lead",
+        "status": 200,
+        "body": {
+          "accepted": true,
+          "outcome": "lead_linked",
+          "event_id": "019a2bf7-6dee-768c-91df-593c8a806eb6",
+          "lead_id": "019a2baa-c642-761d-8dea-0c9e4b02af72",
+          "duplicate": false,
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    ],
+    "error": {
+      "status": 401,
+      "body": {
+        "accepted": false,
+        "error": {
+          "code": "SIGNATURE_INVALID",
+          "message": "Signature verification failed.",
+          "retryable": false
+        },
+        "request_id": "req_01J9X4B7M2"
+      }
+    },
+    "statuses": [
+      201,
+      200,
+      409,
+      400,
+      401,
+      403,
+      404,
+      410,
+      413,
+      423,
+      429
+    ]
+  },
+  {
+    "id": "API-021",
+    "method": "POST",
+    "path": "/ingest/v1/calls/{sourceKey}",
+    "title": "Receive call event (provider-neutral)",
+    "entitlement": "ingest",
+    "request": {
+      "_note": "LeadGuard normalized call event (test double). Real provider payload and signature are defined in INT-002 after provider selection.",
+      "provider": "pilot_call_provider",
+      "call_id": "CA7f3e19b2",
+      "event_type": "call.completed",
+      "direction": "inbound",
+      "from": "+15125550199",
+      "to": "+15125550100",
+      "started_at": "2026-10-14T16:02:00Z",
+      "duration_seconds": 0,
+      "answered": false,
+      "voicemail": true
+    },
+    "success": {
+      "status": 201,
+      "body": {
+        "accepted": true,
+        "outcome": "lead_created",
+        "event_id": "019a2bce-2788-70ae-92e6-cc0c1f946b75",
+        "lead_id": "019a2bba-e56f-7f81-98e4-e10dc32b8147",
+        "duplicate": false,
+        "classification": "missed_call",
+        "request_id": "req_01J9X4B7M2"
+      }
+    },
+    "extra": [
+      {
+        "label": "Answered call logged on an existing lead",
+        "status": 200,
+        "body": {
+          "accepted": true,
+          "outcome": "activity_logged",
+          "event_id": "019a2b2f-4e08-7a37-a169-a70f1c5c5b91",
+          "lead_id": "019a2baa-c642-761d-8dea-0c9e4b02af72",
+          "duplicate": false,
+          "classification": "answered_call_logged",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    ],
+    "error": {
+      "status": 400,
+      "body": {
+        "accepted": false,
+        "error": {
+          "code": "PAYLOAD_UNMAPPABLE",
+          "message": "Required field 'from' missing after provider mapping.",
+          "retryable": false
+        },
+        "request_id": "req_01J9X4B7M2"
+      }
+    },
+    "statuses": [
+      201,
+      200,
+      400,
+      401,
+      404,
+      410,
+      423,
+      429
+    ]
+  },
+  {
+    "id": "API-022",
+    "method": "GET",
+    "path": "/api/v1/inbox",
+    "title": "Needs Action inbox",
+    "entitlement": "read",
+    "request": null,
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "counts": {
+            "overdue": 3,
+            "due_soon": 5,
+            "unassigned": 2
+          },
+          "sections": {
+            "overdue": [
+              {
+                "id": "019a2b90-99ae-7aca-87ef-56a19f56ae4f",
+                "name": "Greg Hall",
+                "source": "Website contact form",
+                "owner": "Maria Lopez",
+                "next_action": "Second call attempt",
+                "due_at_local": "Oct 14, 9:30 AM CDT",
+                "overdue_minutes": 72,
+                "escalated": true,
+                "version": 5
+              }
+            ],
+            "due_soon": [
+              {
+                "id": "019a2baa-c642-761d-8dea-0c9e4b02af72",
+                "name": "Dana Morales",
+                "source": "Website contact form",
+                "owner": "Chris Patel",
+                "next_action": "First call",
+                "due_at_local": "Oct 14, 10:57 AM CDT",
+                "due_in_minutes": 15,
+                "version": 1
+              }
+            ],
+            "unassigned": [
+              {
+                "id": "019a2bba-e56f-7f81-98e4-e10dc32b8147",
+                "name": null,
+                "phone_masked": "(512) ***-0199",
+                "source": "Office phone line",
+                "next_action": "Return missed call",
+                "waiting_minutes": 6,
+                "version": 1
+              }
+            ]
+          },
+          "cursors": {
+            "overdue": null,
+            "due_soon": null,
+            "unassigned": null
+          }
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 401,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "AUTHENTICATION_REQUIRED",
+          "message": "Your session has expired. Sign in again.",
+          "retryable": false,
+          "details": {}
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      401
+    ]
+  },
+  {
+    "id": "API-023",
+    "method": "POST",
+    "path": "/api/v1/leads/search",
+    "title": "Search and list leads",
+    "entitlement": "read",
+    "request": {
+      "query": "morales",
+      "status": [
+        "new",
+        "attempted",
+        "contacted"
+      ],
+      "owner_id": null,
+      "source_id": null,
+      "created_from": "2026-10-01",
+      "limit": 25,
+      "cursor": null
+    },
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "items": [
+            {
+              "id": "019a2baa-c642-761d-8dea-0c9e4b02af72",
+              "name": "Dana Morales",
+              "status": "new",
+              "owner": "Chris Patel",
+              "source": "Website contact form",
+              "created_at": "2026-10-14T15:42:11Z",
+              "due_at_local": "Oct 14, 10:57 AM CDT"
+            }
+          ],
+          "next_cursor": null
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 400,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "VALIDATION_FAILED",
+          "message": "Search text must be at least 2 characters.",
+          "retryable": false,
+          "details": {
+            "fields": {
+              "query": "Minimum 2 characters."
+            }
+          }
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      400,
+      429
+    ]
+  },
+  {
+    "id": "API-024",
+    "method": "POST",
+    "path": "/api/v1/leads",
+    "title": "Create lead manually",
+    "entitlement": "business_write",
+    "request": {
+      "name": "Kim Nguyen",
+      "phone": "512-555-0177",
+      "email": null,
+      "message": "Quote for bathroom remodel",
+      "owner_id": "me"
+    },
+    "success": {
+      "status": 201,
+      "body": {
+        "success": true,
+        "message": "Lead created.",
+        "data": {
+          "id": "019a2b65-d5d3-7663-bf0a-583c85ce4684",
+          "status": "new",
+          "contact": {
+            "name": "Kim Nguyen",
+            "email": null,
+            "phone": "+15125550177"
+          },
+          "message": "Quote for bathroom remodel",
+          "source": {
+            "id": null,
+            "name": "Manual entry",
+            "type": "manual"
+          },
+          "owner": {
+            "user_id": "019a2b27-abca-700f-a4be-ca654d3a0312",
+            "name": "Chris Patel"
+          },
+          "next_action": "First call",
+          "due_at": "2026-10-14T15:57:10Z",
+          "due_at_local": "Oct 14, 10:57 AM CDT",
+          "due_state": "due_soon",
+          "first_action_at": null,
+          "version": 1,
+          "created_at": "2026-10-14T15:42:11Z",
+          "possible_duplicates": [
+            {
+              "id": "019a2b1f-05ce-7b73-9a45-9390a12b130a",
+              "name": "Kim Nguyen",
+              "status": "lost",
+              "created_at": "2026-08-02T14:00:00Z"
+            }
+          ]
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 423,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "SUBSCRIPTION_INACTIVE",
+          "message": "Your subscription has ended. Leads are read-only; export your data or reactivate.",
+          "retryable": false,
+          "details": {
+            "state": "read_only"
+          }
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      201,
+      400,
+      403,
+      409,
+      422,
+      423
+    ]
+  },
+  {
+    "id": "API-025",
+    "method": "GET",
+    "path": "/api/v1/leads/{leadId}",
+    "title": "Read lead",
+    "entitlement": "read",
+    "request": null,
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "id": "019a2baa-c642-761d-8dea-0c9e4b02af72",
+          "status": "new",
+          "contact": {
+            "name": "Dana Morales",
+            "email": "dana.morales@example.com",
+            "phone": "+15125550142"
+          },
+          "message": "Water heater leaking, need someone today.",
+          "source": {
+            "id": "019a2b21-2c94-7b5a-b86a-d61bf3ee110c",
+            "name": "Website contact form",
+            "type": "web_form_webhook"
+          },
+          "owner": {
+            "user_id": "019a2b27-abca-700f-a4be-ca654d3a0312",
+            "name": "Chris Patel"
+          },
+          "next_action": "First call",
+          "due_at": "2026-10-14T15:57:10Z",
+          "due_at_local": "Oct 14, 10:57 AM CDT",
+          "due_state": "due_soon",
+          "first_action_at": null,
+          "version": 1,
+          "created_at": "2026-10-14T15:42:11Z",
+          "attributes": {
+            "service": "plumbing",
+            "zip": "78704"
+          },
+          "primary_action": {
+            "label": "Call Dana",
+            "type": "call",
+            "tel": "+15125550142"
+          },
+          "allowed_actions": [
+            "log_activity",
+            "assign",
+            "change_status",
+            "snooze",
+            "merge"
+          ],
+          "allowed_statuses": [
+            "attempted",
+            "contacted",
+            "lost",
+            "spam"
+          ],
+          "timers": [
+            {
+              "kind": "first_response_due",
+              "due_at": "2026-10-14T15:57:10Z",
+              "state": "pending"
+            }
+          ],
+          "events": [
+            {
+              "event_id": "019a2b62-7626-7ac1-a47c-8c2db24b73ec",
+              "kind": "form_submission",
+              "received_at": "2026-10-14T15:42:10Z"
+            }
+          ]
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 404,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "NOT_FOUND",
+          "message": "Lead not found.",
+          "retryable": false,
+          "details": {}
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      401,
+      404
+    ]
+  },
+  {
+    "id": "API-026",
+    "method": "PATCH",
+    "path": "/api/v1/leads/{leadId}",
+    "title": "Update lead contact details",
+    "entitlement": "business_write",
+    "request": {
+      "expected_version": 2,
+      "contact": {
+        "phone": "+15125550143"
+      },
+      "next_action": "Call after 2 PM"
+    },
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "message": "Lead updated.",
+        "data": {
+          "id": "019a2baa-c642-761d-8dea-0c9e4b02af72",
+          "contact": {
+            "name": "Dana Morales",
+            "email": "dana.morales@example.com",
+            "phone": "+15125550143"
+          },
+          "next_action": "Call after 2 PM",
+          "version": 3
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 409,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "VERSION_CONFLICT",
+          "message": "This lead was changed by someone else. Reload to see the latest version.",
+          "retryable": false,
+          "details": {
+            "current_version": 3
+          }
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      400,
+      403,
+      404,
+      409,
+      423
+    ]
+  },
+  {
+    "id": "API-027",
+    "method": "POST",
+    "path": "/api/v1/leads/{leadId}/assign",
+    "title": "Assign or claim lead",
+    "entitlement": "business_write",
+    "request": {
+      "expected_version": 1,
+      "owner_id": "019a2b60-717d-7b2a-b059-d6ef5efdcaf8",
+      "note": "Maria covers south Austin"
+    },
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "message": "Lead assigned to Maria Lopez.",
+        "data": {
+          "id": "019a2bba-e56f-7f81-98e4-e10dc32b8147",
+          "owner": {
+            "user_id": "019a2b60-717d-7b2a-b059-d6ef5efdcaf8",
+            "name": "Maria Lopez"
+          },
+          "due_at": "2026-10-14T16:17:00Z",
+          "due_at_local": "Oct 14, 11:17 AM CDT",
+          "timers_cancelled": [
+            "unassigned_escalation"
+          ],
+          "version": 2
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T16:02:30Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 409,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "ALREADY_CLAIMED",
+          "message": "Chris Patel claimed this lead a moment ago.",
+          "retryable": false,
+          "details": {
+            "owner_id": "019a2b27-abca-700f-a4be-ca654d3a0312",
+            "current_version": 2
+          }
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      403,
+      404,
+      409,
+      422
+    ]
+  },
+  {
+    "id": "API-028",
+    "method": "POST",
+    "path": "/api/v1/leads/{leadId}/activities",
+    "title": "Log contact attempt or note",
+    "entitlement": "business_write",
+    "request": {
+      "expected_version": 1,
+      "type": "call",
+      "outcome": "no_answer",
+      "note": "Left voicemail",
+      "occurred_at": "2026-10-14T15:50:00Z"
+    },
+    "success": {
+      "status": 201,
+      "body": {
+        "success": true,
+        "message": "Call logged. Next attempt due 11:50 AM.",
+        "data": {
+          "activity": {
+            "id": "019a2b17-7f51-7845-858d-8c4abe9c1c37",
+            "type": "call",
+            "outcome": "no_answer",
+            "occurred_at": "2026-10-14T15:50:00Z",
+            "by": "Chris Patel"
+          },
+          "lead": {
+            "id": "019a2baa-c642-761d-8dea-0c9e4b02af72",
+            "status": "attempted",
+            "first_action_at": "2026-10-14T15:50:00Z",
+            "next_action": "Follow-up attempt 2",
+            "due_at_local": "Oct 14, 11:50 AM CDT",
+            "version": 2
+          },
+          "timers": {
+            "cancelled": [
+              "first_response_due"
+            ],
+            "created": [
+              "follow_up_due"
+            ]
+          }
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:50:05Z"
+        }
+      }
+    },
+    "extra": [
+      {
+        "label": "Result when contact is made (outcome = reached)",
+        "status": 201,
+        "body": {
+          "success": true,
+          "message": "Marked contacted. Pending reminders cancelled.",
+          "data": {
+            "activity": {
+              "id": "019a2b32-1a2d-73d6-b07e-7d259d79d02e",
+              "type": "call",
+              "outcome": "reached"
+            },
+            "lead": {
+              "id": "019a2baa-c642-761d-8dea-0c9e4b02af72",
+              "status": "contacted",
+              "next_action": null,
+              "due_at": null,
+              "version": 3
+            },
+            "timers": {
+              "cancelled": [
+                "follow_up_due",
+                "escalation"
+              ],
+              "created": []
+            },
+            "alerts_cancelled": 1
+          },
+          "meta": {
+            "api_version": "v1",
+            "request_id": "req_01J9X4B7M2",
+            "timestamp": "2026-10-14T15:50:05Z"
+          }
+        }
+      }
+    ],
+    "error": {
+      "status": 400,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "VALIDATION_FAILED",
+          "message": "Activity time cannot be in the future.",
+          "retryable": false,
+          "details": {
+            "fields": {
+              "occurred_at": "Must be on or before now."
+            }
+          }
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      201,
+      400,
+      403,
+      404,
+      409,
+      423
+    ]
+  },
+  {
+    "id": "API-029",
+    "method": "POST",
+    "path": "/api/v1/leads/{leadId}/status",
+    "title": "Change lead status",
+    "entitlement": "business_write",
+    "request": {
+      "expected_version": 3,
+      "to_status": "won",
+      "reason": "Booked water heater replacement"
+    },
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "message": "Lead marked won.",
+        "data": {
+          "id": "019a2baa-c642-761d-8dea-0c9e4b02af72",
+          "status": "won",
+          "previous_status": "contacted",
+          "closed_at": "2026-10-14T17:20:00Z",
+          "timers_cancelled": 0,
+          "version": 4
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T17:20:01Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 422,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "INVALID_TRANSITION",
+          "message": "A lead cannot move from 'new' to 'won'. Log contact first.",
+          "retryable": false,
+          "details": {
+            "from": "new",
+            "to": "won",
+            "allowed": [
+              "attempted",
+              "contacted",
+              "lost",
+              "spam"
+            ]
+          }
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      403,
+      404,
+      409,
+      422
+    ]
+  },
+  {
+    "id": "API-030",
+    "method": "POST",
+    "path": "/api/v1/leads/{leadId}/snooze",
+    "title": "Reschedule next action",
+    "entitlement": "business_write",
+    "request": {
+      "expected_version": 2,
+      "due_at_local": "2026-10-15T09:00",
+      "reason": "Customer asked for a call tomorrow morning"
+    },
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "message": "Rescheduled for Oct 15, 9:00 AM.",
+        "data": {
+          "id": "019a2baa-c642-761d-8dea-0c9e4b02af72",
+          "next_action": "Follow-up call",
+          "due_at": "2026-10-15T14:00:00Z",
+          "due_at_local": "Oct 15, 9:00 AM CDT",
+          "version": 3
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 400,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "LOCAL_TIME_AMBIGUOUS",
+          "message": "1:30 AM happens twice on Nov 1 because clocks move back. Choose another time.",
+          "retryable": false,
+          "details": {
+            "due_at_local": "2026-11-01T01:30"
+          }
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      400,
+      404,
+      409,
+      422
+    ]
+  },
+  {
+    "id": "API-031",
+    "method": "GET",
+    "path": "/api/v1/leads/{leadId}/timeline",
+    "title": "Lead timeline",
+    "entitlement": "read",
+    "request": null,
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "items": [
+            {
+              "at": "2026-10-14T15:42:10Z",
+              "type": "event_received",
+              "text": "Enquiry received from Website contact form"
+            },
+            {
+              "at": "2026-10-14T15:42:11Z",
+              "type": "assigned",
+              "text": "Assigned to Chris Patel by round-robin rule (policy v3)"
+            },
+            {
+              "at": "2026-10-14T15:42:11Z",
+              "type": "due_set",
+              "text": "First response due 10:57 AM CDT (15 min target, business hours v2)"
+            },
+            {
+              "at": "2026-10-14T15:57:10Z",
+              "type": "reminder",
+              "text": "Reminder to Chris Patel - first response overdue (policy v3, first_response_due cycle 1)",
+              "alert_id": "019a2ba7-3575-71d3-ade9-139e71cf3166",
+              "deliveries": [
+                {
+                  "recipient": "Chris Patel",
+                  "channel": "in_app",
+                  "state": "delivered"
+                },
+                {
+                  "recipient": "Chris Patel",
+                  "channel": "email",
+                  "state": "delivered"
+                }
+              ]
+            },
+            {
+              "at": "2026-10-14T16:27:10Z",
+              "type": "escalation",
+              "text": "Escalated to owner (no active manager) - overdue 30 min (policy v3, escalation cycle 1)",
+              "alert_id": "019a2b07-dcae-7091-95f4-8632a56c187a",
+              "deliveries": [
+                {
+                  "recipient": "Chris Patel",
+                  "channel": "in_app",
+                  "state": "delivered"
+                },
+                {
+                  "recipient": "Chris Patel",
+                  "channel": "email",
+                  "state": "accepted"
+                }
+              ]
+            },
+            {
+              "at": "2026-10-14T16:31:00Z",
+              "type": "activity",
+              "text": "Chris Patel logged a call: reached (self-reported)"
+            },
+            {
+              "at": "2026-10-14T16:31:00Z",
+              "type": "timer_cancelled",
+              "text": "Follow-up reminder cancelled - lead contacted"
+            }
+          ],
+          "next_cursor": null
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T16:32:00Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 404,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "NOT_FOUND",
+          "message": "Lead not found.",
+          "retryable": false,
+          "details": {}
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      404
+    ]
+  },
+  {
+    "id": "API-032",
+    "method": "POST",
+    "path": "/api/v1/leads/{leadId}/merge",
+    "title": "Merge duplicate lead",
+    "entitlement": "business_write",
+    "request": {
+      "merge_lead_id": "019a2bba-e56f-7f81-98e4-e10dc32b8147",
+      "expected_version": 3,
+      "merge_expected_version": 2
+    },
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "message": "Leads merged.",
+        "data": {
+          "id": "019a2baa-c642-761d-8dea-0c9e4b02af72",
+          "merged_lead_id": "019a2bba-e56f-7f81-98e4-e10dc32b8147",
+          "events_moved": 1,
+          "activities_moved": 2,
+          "merged_lead_status": "merged",
+          "version": 4
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T16:40:00Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 422,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "MERGE_NOT_ALLOWED",
+          "message": "You cannot merge a lead into itself.",
+          "retryable": false,
+          "details": {}
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      403,
+      404,
+      409,
+      422
+    ]
+  },
+  {
+    "id": "API-033",
+    "method": "GET",
+    "path": "/api/v1/rules/follow-up-policy",
+    "title": "Read follow-up policy",
+    "entitlement": "read",
+    "request": null,
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "version": 3,
+          "assignment": {
+            "mode": "round_robin",
+            "eligible_roles": [
+              "member",
+              "manager"
+            ]
+          },
+          "first_response": {
+            "target_minutes": 15,
+            "business_hours_only": true
+          },
+          "follow_up": {
+            "attempt_intervals_minutes": [
+              60,
+              240,
+              1440
+            ],
+            "max_attempts": 4
+          },
+          "escalation": {
+            "after_overdue_minutes": 30,
+            "notify": [
+              "managers"
+            ],
+            "repeat": false
+          },
+          "unassigned_escalation_minutes": 10,
+          "updated_by": "Chris Patel",
+          "updated_at": "2026-10-10T18:20:00Z"
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 401,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "AUTHENTICATION_REQUIRED",
+          "message": "Your session has expired. Sign in again.",
+          "retryable": false,
+          "details": {}
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      401
+    ]
+  },
+  {
+    "id": "API-034",
+    "method": "PUT",
+    "path": "/api/v1/rules/follow-up-policy",
+    "title": "Replace follow-up policy",
+    "entitlement": "setup",
+    "request": {
+      "expected_version": 3,
+      "assignment": {
+        "mode": "fixed_owner",
+        "owner_id": "019a2b60-717d-7b2a-b059-d6ef5efdcaf8"
+      },
+      "first_response": {
+        "target_minutes": 10,
+        "business_hours_only": true
+      },
+      "follow_up": {
+        "attempt_intervals_minutes": [
+          60,
+          1440
+        ],
+        "max_attempts": 3
+      },
+      "escalation": {
+        "after_overdue_minutes": 20,
+        "notify": [
+          "owners",
+          "managers"
+        ],
+        "repeat": false
+      },
+      "unassigned_escalation_minutes": 10
+    },
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "message": "Follow-up rules saved (version 4).",
+        "data": {
+          "version": 4,
+          "active_from": "2026-10-14T15:42:11Z",
+          "applies_to": "new leads and next timer step of open leads"
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 400,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "VALIDATION_FAILED",
+          "message": "First response target must be between 5 and 1440 minutes.",
+          "retryable": false,
+          "details": {
+            "fields": {
+              "first_response.target_minutes": "5-1440"
+            }
+          }
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      400,
+      403,
+      409
+    ]
+  },
+  {
+    "id": "API-035",
+    "method": "POST",
+    "path": "/api/v1/rules/follow-up-policy/preview",
+    "title": "Preview due times",
+    "entitlement": "read",
+    "request": {
+      "policy": {
+        "first_response": {
+          "target_minutes": 15,
+          "business_hours_only": true
+        },
+        "escalation": {
+          "after_overdue_minutes": 30
+        }
+      },
+      "arrival_local": "2026-10-16T17:55"
+    },
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "arrival_local": "Fri Oct 16, 5:55 PM CDT",
+          "business_hours_version": 3,
+          "business_hours_status": "closes 6:00 PM; Saturday closed",
+          "first_response_due_local": "Mon Oct 19, 8:10 AM CDT",
+          "explanation": "5 business minutes remain Friday; the remaining 10 minutes start at Monday 8:00 AM opening.",
+          "escalation_at_local": "Mon Oct 19, 8:40 AM CDT"
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 400,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "LOCAL_TIME_IN_DST_GAP",
+          "message": "That local time does not exist because clocks move forward. Choose another time.",
+          "retryable": false,
+          "details": {
+            "arrival_local": "2027-03-14T02:30"
+          }
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      400
+    ]
+  },
+  {
+    "id": "API-036",
+    "method": "GET",
+    "path": "/api/v1/alerts",
+    "title": "List my alerts",
+    "entitlement": "read",
+    "request": null,
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "items": [
+            {
+              "id": "019a2b07-dcae-7091-95f4-8632a56c187a",
+              "kind": "escalation",
+              "lead_id": "019a2baa-c642-761d-8dea-0c9e4b02af72",
+              "lead_name": "Dana Morales",
+              "text": "Overdue 30 min - owner Chris Patel",
+              "created_at": "2026-10-14T16:27:10Z",
+              "my_deliveries": [
+                {
+                  "channel": "in_app",
+                  "state": "delivered"
+                },
+                {
+                  "channel": "email",
+                  "state": "accepted"
+                }
+              ],
+              "acknowledged": false
+            }
+          ],
+          "unread": 1,
+          "next_cursor": null
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T16:28:00Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 401,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "AUTHENTICATION_REQUIRED",
+          "message": "Your session has expired. Sign in again.",
+          "retryable": false,
+          "details": {}
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      401
+    ]
+  },
+  {
+    "id": "API-037",
+    "method": "POST",
+    "path": "/api/v1/alerts/{alertId}/acknowledge",
+    "title": "Acknowledge alert",
+    "entitlement": "control",
+    "request": {},
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "message": "Alert acknowledged. The lead is still overdue.",
+        "data": {
+          "id": "019a2b07-dcae-7091-95f4-8632a56c187a",
+          "acknowledged_by": "019a2b27-abca-700f-a4be-ca654d3a0312",
+          "acknowledged_at": "2026-10-14T16:29:40Z",
+          "lead_still_overdue": true
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T16:29:41Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 404,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "NOT_FOUND",
+          "message": "Alert not found.",
+          "retryable": false,
+          "details": {}
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      404
+    ]
+  },
+  {
+    "id": "API-038",
+    "method": "PUT",
+    "path": "/api/v1/me/notification-preferences",
+    "title": "Set notification preferences",
+    "entitlement": "control",
+    "request": {
+      "channels": {
+        "in_app": true,
+        "email": true,
+        "sms": false
+      },
+      "escalations_always_email": true
+    },
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "message": "Preferences saved.",
+        "data": {
+          "channels": {
+            "in_app": true,
+            "email": true,
+            "sms": false
+          },
+          "escalations_always_email": true,
+          "sms_available": false
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 422,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "CHANNEL_NOT_AVAILABLE",
+          "message": "Text-message alerts are not enabled for your organization yet.",
+          "retryable": false,
+          "details": {}
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      400,
+      422
+    ]
+  },
+  {
+    "id": "API-039",
+    "method": "GET",
+    "path": "/api/v1/dashboard/summary",
+    "title": "Owner dashboard summary",
+    "entitlement": "read",
+    "request": null,
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "range": {
+            "from": "2026-10-01",
+            "to": "2026-10-14",
+            "time_zone": "America/Chicago"
+          },
+          "leads": {
+            "received": 52,
+            "test_excluded": 1,
+            "by_source": [
+              {
+                "source": "Website contact form",
+                "count": 38
+              },
+              {
+                "source": "Office phone line",
+                "count": 11
+              },
+              {
+                "source": "Manual entry",
+                "count": 3
+              }
+            ]
+          },
+          "first_action": {
+            "median_minutes": 11,
+            "p90_minutes": 46,
+            "within_target_pct": 79.0,
+            "no_action_yet": 2
+          },
+          "unattended": {
+            "overdue_now": 3,
+            "unassigned_now": 2,
+            "escalations_sent": 6
+          },
+          "outcomes": {
+            "contacted": 31,
+            "won": 9,
+            "lost": 7,
+            "spam": 2,
+            "open": 3
+          },
+          "definitions": {
+            "cohort": "leads created in range, excluding is_test, spam and merged",
+            "first_action": "first call/text/email/visit activity (self-reported); notes and status changes excluded",
+            "within_target_pct": "cohort leads whose first action was at or before due_at / cohort leads whose due_at has passed",
+            "time_basis": "business minutes"
+          }
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 403,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "AUTHORIZATION_DENIED",
+          "message": "Only owners and managers can view the dashboard.",
+          "retryable": false,
+          "details": {}
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      400,
+      403
+    ]
+  },
+  {
+    "id": "API-040",
+    "method": "GET",
+    "path": "/api/v1/dashboard/exceptions",
+    "title": "Unresolved exceptions",
+    "entitlement": "read",
+    "request": null,
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "items": [
+            {
+              "type": "escalation_not_delivered",
+              "lead_id": "019a2b90-99ae-7aca-87ef-56a19f56ae4f",
+              "alert_id": "019a2bbf-8767-7494-8d64-200bf5ac1135",
+              "text": "Escalation email to Chris Patel bounced (in-app delivered)",
+              "since": "2026-10-14T15:00:30Z",
+              "action": "Check Chris's email address"
+            },
+            {
+              "type": "source_failing",
+              "source_id": "019a2bff-3594-7d17-b29f-d05ed26570b5",
+              "text": "Office phone line: 3 signature failures",
+              "since": "2026-10-14T14:01:12Z",
+              "action": "Rotate or re-enter the signing secret"
+            },
+            {
+              "type": "lead_overdue",
+              "lead_id": "019a2b90-99ae-7aca-87ef-56a19f56ae4f",
+              "text": "Greg Hall overdue 72 min (Maria Lopez)",
+              "since": "2026-10-14T14:30:00Z",
+              "action": "Reassign or call"
+            }
+          ],
+          "next_cursor": null
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 403,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "AUTHORIZATION_DENIED",
+          "message": "Only owners and managers can view exceptions.",
+          "retryable": false,
+          "details": {}
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      403
+    ]
+  },
+  {
+    "id": "API-041",
+    "method": "GET",
+    "path": "/api/v1/dashboard/source-health",
+    "title": "Source health",
+    "entitlement": "read",
+    "request": null,
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "items": [
+            {
+              "source_id": "019a2b21-2c94-7b5a-b86a-d61bf3ee110c",
+              "name": "Website contact form",
+              "status": "verified",
+              "last_event_at": "2026-10-14T15:42:10Z",
+              "last_7d": {
+                "accepted": 31,
+                "duplicate": 4,
+                "rejected": 0
+              },
+              "silence_alert": false
+            },
+            {
+              "source_id": "019a2bff-3594-7d17-b29f-d05ed26570b5",
+              "name": "Office phone line",
+              "status": "failing",
+              "last_event_at": "2026-10-13T21:10:02Z",
+              "last_7d": {
+                "accepted": 11,
+                "duplicate": 0,
+                "rejected": 3
+              },
+              "silence_alert": false
+            }
+          ]
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 403,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "AUTHORIZATION_DENIED",
+          "message": "Only owners and managers can view source health.",
+          "retryable": false,
+          "details": {}
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      403
+    ]
+  },
+  {
+    "id": "API-042",
+    "method": "GET",
+    "path": "/api/v1/billing/plans",
+    "title": "List plans",
+    "entitlement": "read",
+    "request": null,
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "currency": "USD",
+          "status": "draft_pending_validation",
+          "items": [
+            {
+              "plan_id": "starter",
+              "name": "Starter",
+              "price_monthly": null,
+              "limits": {
+                "members": 3,
+                "sources": 1,
+                "leads_per_month": 200
+              }
+            },
+            {
+              "plan_id": "team",
+              "name": "Team",
+              "price_monthly": null,
+              "limits": {
+                "members": 10,
+                "sources": 3,
+                "leads_per_month": 1000
+              }
+            }
+          ],
+          "note": "Prices are set by leadership within the USD 50-200 range before publication."
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 401,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "AUTHENTICATION_REQUIRED",
+          "message": "Your session has expired. Sign in again.",
+          "retryable": false,
+          "details": {}
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      401
+    ]
+  },
+  {
+    "id": "API-043",
+    "method": "GET",
+    "path": "/api/v1/billing/subscription",
+    "title": "Read subscription",
+    "entitlement": "read",
+    "request": null,
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "state": "trialing",
+          "plan_id": "team",
+          "trial": {
+            "started_at": "2026-10-10T18:03:44Z",
+            "ends_at": "2026-10-24T18:03:44Z",
+            "card_on_file": false
+          },
+          "usage": {
+            "members": 2,
+            "sources": 2,
+            "leads_this_month": 38
+          },
+          "writable": true,
+          "after_trial": "Your account becomes read-only. You can export your data at any time.",
+          "payment_method": null
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 401,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "AUTHENTICATION_REQUIRED",
+          "message": "Your session has expired. Sign in again.",
+          "retryable": false,
+          "details": {}
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      401
+    ]
+  },
+  {
+    "id": "API-044",
+    "method": "POST",
+    "path": "/api/v1/billing/checkout",
+    "title": "Start checkout (explicit authorization)",
+    "entitlement": "control",
+    "request": {
+      "plan_id": "team",
+      "confirm_plan_and_price": true,
+      "return_url": "https://app.leadguard.io/settings/billing"
+    },
+    "success": {
+      "status": 201,
+      "body": {
+        "success": true,
+        "message": "Continue on the secure payment page.",
+        "data": {
+          "checkout_id": "019a2b78-8014-7dd2-961b-5bed8986eaad",
+          "provider": "selected_at_G0",
+          "checkout_url": "https://checkout.provider.example/c/cs_7Hq2",
+          "expires_at": "2026-10-14T16:12:11Z",
+          "subscription_state": "trialing"
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 409,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "BILLING_NOT_CONFIGURED",
+          "message": "Online payment is not available yet. Contact us to arrange your plan.",
+          "retryable": false,
+          "details": {}
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      201,
+      400,
+      403,
+      409,
+      503
+    ]
+  },
+  {
+    "id": "API-045",
+    "method": "POST",
+    "path": "/api/v1/billing/cancel",
+    "title": "Cancel subscription",
+    "entitlement": "control",
+    "request": {
+      "reason": "Too expensive",
+      "confirm": true
+    },
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "message": "Cancellation scheduled. You keep full access until Nov 10, 2026.",
+        "data": {
+          "state": "active",
+          "cancel_at_period_end": true,
+          "access_until": "2026-11-10T00:00:00Z",
+          "then": "read_only",
+          "export_available": true
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 400,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "CONFIRMATION_REQUIRED",
+          "message": "Confirm that you want to cancel.",
+          "retryable": false,
+          "details": {}
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      400,
+      403,
+      503
+    ]
+  },
+  {
+    "id": "API-046",
+    "method": "POST",
+    "path": "/webhooks/v1/billing/{provider}",
+    "title": "Billing provider webhook",
+    "entitlement": "provider",
+    "request": {
+      "_note": "LeadGuard normalized billing event (test double); the real provider event is mapped by the adapter in INT-004.",
+      "id": "evt_3Pq9",
+      "type": "subscription.updated",
+      "data": {
+        "subscription_id": "sub_9Ka",
+        "status": "active",
+        "current_period_end": 1794268800,
+        "metadata": {
+          "org_id": "019a2b75-de36-7e2f-80ab-eb21aca45e7a"
+        }
+      }
+    },
+    "success": {
+      "status": 200,
+      "body": {
+        "received": true,
+        "applied": true,
+        "org_state": "active"
+      }
+    },
+    "extra": [
+      {
+        "label": "Duplicate provider event",
+        "status": 200,
+        "body": {
+          "received": true,
+          "applied": false,
+          "duplicate": true
+        }
+      }
+    ],
+    "error": {
+      "status": 401,
+      "body": {
+        "received": false,
+        "error": "signature_invalid"
+      }
+    },
+    "statuses": [
+      200,
+      400,
+      401
+    ]
+  },
+  {
+    "id": "API-047",
+    "method": "POST",
+    "path": "/webhooks/v1/notifications/{provider}",
+    "title": "Notification delivery webhook",
+    "entitlement": "provider",
+    "request": {
+      "_note": "LeadGuard normalized delivery event (test double); provider payload and signature defined in INT-003 after provider selection.",
+      "message_id": "msg_88ad",
+      "event": "bounced",
+      "at": "2026-10-14T15:00:30Z"
+    },
+    "success": {
+      "status": 200,
+      "body": {
+        "received": true,
+        "alert_id": "019a2bbf-8767-7494-8d64-200bf5ac1135",
+        "channel": "email",
+        "delivery_state": "failed"
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 401,
+      "body": {
+        "received": false,
+        "error": "signature_invalid"
+      }
+    },
+    "statuses": [
+      200,
+      401
+    ]
+  },
+  {
+    "id": "API-048",
+    "method": "POST",
+    "path": "/api/v1/exports",
+    "title": "Request data export",
+    "entitlement": "control",
+    "request": {
+      "include": [
+        "leads",
+        "activities",
+        "alerts"
+      ],
+      "format": "csv_zip"
+    },
+    "success": {
+      "status": 202,
+      "body": {
+        "success": true,
+        "message": "Export started. We will email you when it is ready.",
+        "data": {
+          "export_id": "019a2bb8-4c28-78f7-b067-8782b92cec94",
+          "status": "queued",
+          "poll_url": "/api/v1/exports/019a2bb8-4c28-78f7-b067-8782b92cec94"
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 409,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "EXPORT_IN_PROGRESS",
+          "message": "An export is already running.",
+          "retryable": false,
+          "details": {
+            "export_id": "019a2bea-25e2-7520-bad5-ef04eadd3ca7"
+          }
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      202,
+      403,
+      409,
+      429
+    ]
+  },
+  {
+    "id": "API-049",
+    "method": "GET",
+    "path": "/api/v1/exports/{exportId}",
+    "title": "Export status and download",
+    "entitlement": "control",
+    "request": null,
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "export_id": "019a2bb8-4c28-78f7-b067-8782b92cec94",
+          "status": "ready",
+          "rows": {
+            "leads": 412,
+            "activities": 1890,
+            "alerts": 233
+          },
+          "download_url": "https://files.leadguard.io/exports/019a2bb8-4c28-78f7-b067-8782b92cec94.zip?sig=...",
+          "url_expires_at": "2026-10-14T15:57:11Z",
+          "file_expires_at": "2026-10-15T15:42:11Z"
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 404,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "NOT_FOUND",
+          "message": "Export not found or expired.",
+          "retryable": false,
+          "details": {}
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      404
+    ]
+  },
+  {
+    "id": "API-050",
+    "method": "GET",
+    "path": "/api/v1/support-access/grants",
+    "title": "List support access grants",
+    "entitlement": "read",
+    "request": null,
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "data": {
+          "items": [
+            {
+              "grant_id": "019a2bb3-4e70-7a82-8665-fe27558df923",
+              "scope": "read_only",
+              "reason": "Ticket #1042 - missing leads from form",
+              "granted_by": "Chris Patel",
+              "starts_at": "2026-10-14T15:00:00Z",
+              "expires_at": "2026-10-14T19:00:00Z",
+              "status": "active",
+              "accesses": 3
+            }
+          ]
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 403,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "AUTHORIZATION_DENIED",
+          "message": "Only owners can manage support access.",
+          "retryable": false,
+          "details": {}
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      403
+    ]
+  },
+  {
+    "id": "API-051",
+    "method": "POST",
+    "path": "/api/v1/support-access/grants",
+    "title": "Grant support access",
+    "entitlement": "control",
+    "request": {
+      "scope": "read_only",
+      "duration_hours": 4,
+      "reason": "Ticket #1042 - missing leads from form"
+    },
+    "success": {
+      "status": 201,
+      "body": {
+        "success": true,
+        "message": "Support can view your account (read-only) for 4 hours.",
+        "data": {
+          "grant_id": "019a2bb3-4e70-7a82-8665-fe27558df923",
+          "scope": "read_only",
+          "expires_at": "2026-10-14T19:42:11Z",
+          "status": "active"
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T15:42:11Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 400,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "VALIDATION_FAILED",
+          "message": "Support access can last at most 72 hours.",
+          "retryable": false,
+          "details": {}
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      201,
+      400,
+      403
+    ]
+  },
+  {
+    "id": "API-052",
+    "method": "POST",
+    "path": "/api/v1/support-access/grants/{grantId}/revoke",
+    "title": "Revoke support access",
+    "entitlement": "control",
+    "request": {},
+    "success": {
+      "status": 200,
+      "body": {
+        "success": true,
+        "message": "Support access revoked.",
+        "data": {
+          "grant_id": "019a2bb3-4e70-7a82-8665-fe27558df923",
+          "status": "revoked",
+          "revoked_at": "2026-10-14T16:05:00Z"
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2",
+          "timestamp": "2026-10-14T16:05:01Z"
+        }
+      }
+    },
+    "extra": [],
+    "error": {
+      "status": 404,
+      "body": {
+        "success": false,
+        "error": {
+          "code": "NOT_FOUND",
+          "message": "Grant not found.",
+          "retryable": false,
+          "details": {}
+        },
+        "meta": {
+          "api_version": "v1",
+          "request_id": "req_01J9X4B7M2"
+        }
+      }
+    },
+    "statuses": [
+      200,
+      404
+    ]
+  }
+]

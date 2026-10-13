@@ -1,0 +1,27 @@
+{
+  "name": "@leadguard/api",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "node dist/server.js",
+    "build": "tsup",
+    "test": "node --import tsx --test --test-concurrency=1 test/*.test.ts"
+  },
+  "dependencies": {
+    "@clerk/fastify": "3.1.88",
+    "@leadguard/adapters": "workspace:*",
+    "@leadguard/contracts": "workspace:*",
+    "@leadguard/db": "workspace:*",
+    "@leadguard/domain": "workspace:*",
+    "fastify": "5.12.5",
+    "ioredis": "5.11.1",
+    "luxon": "3.7.2",
+    "pg": "8.23.1",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "embedded-postgres": "18.4.0-beta.17"
+  }
+}

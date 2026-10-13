@@ -1,0 +1,18 @@
+{
+  "name": "@leadguard/db",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "migrate": "tsx src/migrate-cli.ts",
+    "test": "node --import tsx test/run-verify-embedded.ts"
+  },
+  "dependencies": {
+    "@leadguard/domain": "workspace:*",
+    "pg": "8.23.1",
+    "@leadguard/contracts": "workspace:*"
+  }
+}

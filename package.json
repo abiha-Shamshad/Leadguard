@@ -1,0 +1,35 @@
+{
+  "name": "leadguard",
+  "private": true,
+  "type": "module",
+  "description": "LeadGuard Release 1 backend - modular monolith (api + worker) per LG-R1-IMPL-1.1.0",
+  "packageManager": "pnpm@12.11.2",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit && pnpm --filter @leadguard/web typecheck",
+    "test": "pnpm -r test",
+    "test:domain": "pnpm --filter @leadguard/domain test",
+    "test:db": "pnpm --filter @leadguard/db test",
+    "db:migrate": "tsx packages/db/src/migrate-cli.ts",
+    "dev:api": "pnpm --filter @leadguard/api dev",
+    "dev:worker": "pnpm --filter @leadguard/worker dev",
+    "build": "pnpm -r build",
+    "check:spec": "python docs/spec/tools/check_spec.py",
+    "test:db:external": "node packages/db/test/verify_db.mjs",
+    "smoke": "pnpm --filter @leadguard/api --filter @leadguard/worker build && tsx scripts/smoke.ts",
+    "dev:stack": "tsx scripts/dev-stack.ts",
+    "dev:web": "pnpm --filter @leadguard/web dev"
+  },
+  "devDependencies": {
+    "@leadguard/db": "workspace:*",
+    "@leadguard/domain": "workspace:*",
+    "@types/luxon": "3.7.6",
+    "@types/node": "24.19.2",
+    "@types/pg": "8.23.1",
+    "tsup": "8.5.1",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3"
+  }
+}

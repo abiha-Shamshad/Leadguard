@@ -1,0 +1,40 @@
+# Local stack: PostgreSQL 17 + Redis + api + worker. Run migrations first:
+#   docker compose -f infra/docker-compose.yml up -d postgres redis
+#   MIGRATION_ADMIN_DATABASE_URL=postgres://postgres:postgres@localhost:5432/leadguard LG_APP_PASSWORD=app LG_SCANNER_PASSWORD=scanner pnpm db:migrate
+#   docker compose -f infra/docker-compose.yml up -d api worker
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: leadguard
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+  redis:
+    image: redis:7
+    ports: ["6379:6379"]
+  api:
+    build: { context: .., dockerfile: infra/Dockerfile }
+    command: ["node", "apps/api/dist/server.js"]
+    environment: &env
+      NODE_ENV: development
+      AUTH_MODE: dev
+      DATABASE_URL: postgres://lg_app:app@postgres:5432/leadguard
+      SCANNER_DATABASE_URL: postgres://lg_scanner:scanner@postgres:5432/leadguard
+      REDIS_URL: redis://redis:6379
+      API_URL: http://localhost:3001
+      APP_URL: http://localhost:3000
+      CURSOR_SECRET: local-dev-only
+      EXPORT_LOCAL_DIR: /data/exports
+    ports: ["3001:3001"]
+    volumes: [exports:/data/exports]
+    depends_on: [postgres, redis]
+  worker:
+    build: { context: .., dockerfile: infra/Dockerfile }
+    command: ["node", "apps/worker/dist/main.js"]
+    environment: *env
+    volumes: [exports:/data/exports]
+    depends_on: [postgres, redis]
+volumes:
+  pgdata: {}
+  exports: {}
