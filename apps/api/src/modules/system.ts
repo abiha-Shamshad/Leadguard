@@ -1,11 +1,11 @@
 // API-001 Service health and API-002 Current user.
 import type { FastifyInstance } from 'fastify';
 import { getOperation } from '@leadguard/contracts';
-import { withoutOrg } from '@leadguard/db';
+import { effectiveState, getSubscription, withoutOrg } from '@leadguard/db';
 import { permissionsFor } from '@leadguard/domain';
 import type { Deps } from '../deps.ts';
 import { defineRoute, registeredOperations } from '../lib/route.ts';
-import { effectiveState, getSubscription } from '@leadguard/db';
+import { setupProgress } from '../lib/setup.ts';
 
 export function registerSystem(app: FastifyInstance, deps: Deps): void {
   // API-001: 200 ready/degraded while PostgreSQL is reachable; 503 only when it is not (DEC-008).
@@ -40,10 +40,7 @@ export function registerSystem(app: FastifyInstance, deps: Deps): void {
         const cur = active.find(x => x.org_id === a.orgId);
         activeOrg = { id: a.orgId, name: cur?.name ?? o?.name, role: a.support ? 'support' : a.role, time_zone: cur?.time_zone ?? o?.time_zone };
         subscriptionState = effectiveState(await getSubscription(ctx.db, a.orgId), ctx.now);
-        const verified = await ctx.db.one<{ n: number }>(`SELECT count(*)::int AS n FROM lg.sources WHERE status IN ('verified','failing')`);
-        const team = await ctx.db.one<{ n: number }>(
-          `SELECT (SELECT count(*) FROM lg.memberships) + (SELECT count(*) FROM lg.invitations WHERE status IN ('pending','accepted')) - 1 AS n`);
-        setupComplete = verified.n > 0 && team.n > 0;
+        setupComplete = (await setupProgress(ctx.db)).complete;
       }
       return {
         data: {

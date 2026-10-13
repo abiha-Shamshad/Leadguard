@@ -6,7 +6,7 @@ import { useSession } from '@/lib/session';
 import { useCommand, useInvalidate, useOrgQuery } from '@/lib/hooks';
 import { formatInZone, SUB_LABEL } from '@/lib/format';
 import { Badge, Banner, Button, Card, Dialog, ErrorView, Loading, PageHead, TextInput } from '@/components/ui';
-import { LIMITS, MESSAGES, PATTERNS } from '@/lib/limits';
+import { LIMITS } from '@/lib/limits';
 
 interface Plans { currency: string; status: string; note: string; items: { plan_id: string; name: string; price_monthly: number | null; limits: Record<string, number> }[] }
 interface Subscription {

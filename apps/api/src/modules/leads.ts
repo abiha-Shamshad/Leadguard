@@ -8,7 +8,7 @@ import {
   timelineQuery, updateLeadBody, uuid,
 } from '@leadguard/contracts';
 import {
-  checkTransition, formatLocal, isValidEmail, localDateStartUtc, normalizeEmail, normalizePhone, parseLocalWallTime, uuidv7, type LeadStatus, type Role,
+  checkTransition, formatLocal, isValidEmail, localDateStartUtc, normalizeEmail, normalizePhone, parseLocalWallTime, type LeadStatus, type Role,
 } from '@leadguard/domain';
 import {
   addActivity, applyActivity, cancelPendingAlerts, cancelTimers, createLead, createTimer, emit, getSubscription, loadOrgSettings, markAssigned,
@@ -16,7 +16,8 @@ import {
 } from '@leadguard/db';
 import type { Deps } from '../deps.ts';
 import { defineRoute } from '../lib/route.ts';
-import { assertVersion, isManager, loadLead, loadLeadForWrite, seesAllLeads, visibilitySql, type LeadRow } from '../lib/access.ts';
+import { assertVersion, isManager, loadLead, loadLeadForWrite, visibilitySql, type LeadRow } from '../lib/access.ts';
+import { localTimeError } from '../lib/local-time.ts';
 import { allowedActions, contactPhone, dueFields, dueState, names, ownerObj, primaryAction } from '../lib/present.ts';
 import { planLimitError, usage } from '../lib/usage.ts';
 import { enforce } from '../lib/rate-limit.ts';
@@ -76,19 +77,6 @@ function normalizeContact(input: { email?: string | null; phone?: string | null 
   if (Object.keys(fields).length) throw new AppError('VALIDATION_FAILED', 'Check the highlighted fields.', { fields });
   return { email, phone };
 }
-
-function localTimeError(code: string, local: string, zone: string, field: string): AppError {
-  if (code === 'LOCAL_TIME_IN_DST_GAP') {
-    return new AppError('LOCAL_TIME_IN_DST_GAP', 'That local time does not exist because clocks move forward. Choose another time.', { [field]: local });
-  }
-  if (code === 'LOCAL_TIME_AMBIGUOUS') {
-    const dt = DateTime.fromISO(local, { zone });
-    return new AppError('LOCAL_TIME_AMBIGUOUS', `${dt.toFormat('h:mm a')} happens twice on ${dt.toFormat('LLL d')} because clocks move back. Choose another time.`, { [field]: local });
-  }
-  return new AppError('VALIDATION_FAILED', 'Use a valid local date and time.', { fields: { [field]: 'Invalid local time.' } });
-}
-
-export { localTimeError };
 
 function roleFor(actor: Actor): Role {
   return isManager(actor) || actor.support?.scope === 'read_write' ? (actor.role === 'owner' ? 'owner' : 'manager') : 'member';
@@ -523,7 +511,6 @@ export function registerLeads(app: FastifyInstance, deps: Deps): void {
       };
     },
   });
-  void seesAllLeads;
 }
 
 const KIND_LABEL: Record<string, string> = { first_response_due: 'first response overdue', follow_up_due: 'follow-up overdue' };

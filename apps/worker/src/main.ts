@@ -48,12 +48,13 @@ function every(ms: number, name: string, fn: () => Promise<unknown>): void {
   void tick();
 }
 
-async function forEachOrg(fn: (orgId: string) => Promise<void>): Promise<{ orgs: number }> {
+async function forEachOrg(fn: (orgId: string) => Promise<void>): Promise<{ orgs: number; failed: number }> {
   const r = await ctx.scanner.query<{ org_id: string }>('SELECT org_id FROM lg.scan_orgs()');
+  let failed = 0;
   for (const row of r.rows) {
-    try { await fn(row.org_id); } catch (e) { log.warn('org job failed', { org_id: row.org_id, ...errFields(e) }); }
+    try { await fn(row.org_id); } catch (e) { failed++; log.warn('org job failed', { org_id: row.org_id, ...errFields(e) }); }
   }
-  return { orgs: 0 };
+  return { orgs: r.rows.length, failed };
 }
 
 every(config.publishIntervalMs, 'outbox', async () => ({ published: await publishOutbox(ctx) }));
@@ -61,7 +62,7 @@ every(config.sweepIntervalMs, 'sweep', () => sweep(ctx));
 every(15 * 60_000, 'source-health', async () => {
   const r = await ctx.scanner.query<{ source_id: string; org_id: string }>('SELECT source_id, org_id FROM lg.scan_sources()');
   for (const s of r.rows) await ctx.dispatcher.dispatch('source-health', `${s.source_id}-${Math.floor(Date.now() / 900_000)}`, { source_id: s.source_id, org_id: s.org_id });
-  return { sources: 0 };
+  return { sources: r.rows.length };
 });
 every(60 * 60_000, 'billing-reconcile', () => forEachOrg(orgId => processBillingReconcile(ctx, orgId)));
 every(15 * 60_000, 'daily-metrics', () => forEachOrg(orgId => processDailyMetrics(ctx, orgId)));

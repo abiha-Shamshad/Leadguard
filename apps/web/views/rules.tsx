@@ -7,7 +7,7 @@ import { useCommand, useInvalidate, useOrgQuery } from '@/lib/hooks';
 import { formatInZone, localInputValue } from '@/lib/format';
 import type { Member, Page, Policy } from '@/lib/types';
 import { Banner, Button, Card, ErrorView, Loading, Notice, PageHead, Select, TextInput } from '@/components/ui';
-import { LIMITS, MESSAGES, PATTERNS } from '@/lib/limits';
+import { MESSAGES, PATTERNS } from '@/lib/limits';
 
 type Draft = Omit<Policy, 'version' | 'updated_by' | 'updated_at'>;
 

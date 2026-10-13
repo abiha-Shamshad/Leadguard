@@ -7,7 +7,7 @@ import { emit, loadOrgSettings, type OrgSettings } from '@leadguard/db';
 import type { Deps } from '../deps.ts';
 import { defineRoute } from '../lib/route.ts';
 import { zodToValidation } from '../lib/validation.ts';
-import { localTimeError } from './leads.ts';
+import { localTimeError } from '../lib/local-time.ts';
 import { names } from '../lib/present.ts';
 
 function hoursStatus(s: OrgSettings, arrivalUtc: string): string {
@@ -38,7 +38,7 @@ function explain(s: OrgSettings, arrivalUtc: string, minutes: number, dueUtc: st
   if (due.hasSame(arrival, 'day')) return `${minutes} business minutes after arrival, the same day.`;
   if (remainingToday > 0 && remainingToday < minutes) {
     const opening = openIntervals(due.startOf('day'), s.hours)[0]?.start;
-    return `${remainingToday} business minutes remain ${arrival.toFormat('cccc')}; the remaining ${minutes - remainingToday} minutes start at ${due.toFormat('cccc')} ${opening?.toFormat('h:mm a') ?? ''} opening.`.replace(' opening.', ' opening.');
+    return `${remainingToday} business minutes remain ${arrival.toFormat('cccc')}; the remaining ${minutes - remainingToday} minutes start at ${due.toFormat('cccc')} ${opening?.toFormat('h:mm a') ?? ''} opening.`;
   }
   const opening = openIntervals(due.startOf('day'), s.hours)[0]?.start;
   return `Arrives outside business hours; the ${minutes} minutes start at ${due.toFormat('cccc')} ${opening?.toFormat('h:mm a') ?? ''} opening.`;

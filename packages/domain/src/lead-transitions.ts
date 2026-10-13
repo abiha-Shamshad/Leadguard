@@ -11,7 +11,7 @@ export const CLOSED_STATUSES: LeadStatus[] = ['won', 'lost', 'spam'];
 interface TransitionRow {
   from: LeadStatus[];
   to: LeadStatus[];
-  /** Roles allowed in addition to the lead owner. 'any_writer' means anyone with leads.write on the lead. */
+  /** Only managers and owners may make this transition (reopen); otherwise anyone who may write the lead. */
   managerOnly: boolean;
   reasonRequiredFor: LeadStatus[];
 }

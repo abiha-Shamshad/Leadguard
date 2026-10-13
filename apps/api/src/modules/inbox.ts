@@ -82,7 +82,7 @@ function itemFor(section: Section, r: any, tz: string, now: Date) {
 function viewFor(actor: Actor, requested: 'mine' | 'team' | undefined): 'mine' | 'team' {
   // Members see their own and unassigned leads; managers and owners can switch to the team view.
   if (!isManager(actor) && !actor.support) return 'mine';
-  return requested ?? (actor.support ? 'team' : 'team');
+  return requested ?? 'team';
 }
 
 export function registerInbox(app: FastifyInstance, deps: Deps): void {

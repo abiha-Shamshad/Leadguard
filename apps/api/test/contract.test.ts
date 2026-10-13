@@ -298,16 +298,11 @@ test('API-022..API-032 inbox and leads', async () => {
   const missed = (await api('GET', `/api/v1/leads/${S.missedLeadId}`, OWNER)).body.data;
   const unassignedVersion = missed.version;
   checkSuccess('API-027', await post(`/api/v1/leads/${S.missedLeadId}/assign`, OWNER, { expected_version: missed.version, owner_id: S.memberId, note: 'Maria covers south Austin' }));
-  // Claim race: Maria's colleague claimed it a moment ago; a member claiming with the old version gets ALREADY_CLAIMED.
-  const kimLead = (await api('GET', `/api/v1/leads/${S.kimId}`, OWNER)).body.data;
-  void kimLead;
-  checkError('API-027', await post(`/api/v1/leads/${S.missedLeadId}/assign`, bearer('c_member2', 'm2@acme.example', 'Member Two'), { expected_version: unassignedVersion, owner_id: 'me' }).then(async r => {
-    if (r.status !== 404) return r;
-    // Member Two is not in the org yet - invite them, then retry the stale claim.
-    const inv = await post('/api/v1/invitations', OWNER, { email: 'm2@acme.example', role: 'member' });
-    await api('POST', '/api/v1/invitations/accept', bearer('c_member2', 'm2@acme.example', 'Member Two'), { token: inv.body.data.invite_url.split('#')[1] });
-    return post(`/api/v1/leads/${S.missedLeadId}/assign`, bearer('c_member2', 'm2@acme.example', 'Member Two'), { expected_version: unassignedVersion, owner_id: 'me' });
-  }));
+  // Claim race: another member tries to claim with the version they saw while it was unassigned -> ALREADY_CLAIMED.
+  const MEMBER2 = bearer('c_member2', 'm2@acme.example', 'Member Two');
+  const inv = await post('/api/v1/invitations', OWNER, { email: 'm2@acme.example', role: 'member' });
+  await api('POST', '/api/v1/invitations/accept', MEMBER2, { token: inv.body.data.invite_url.split('#')[1] });
+  checkError('API-027', await post(`/api/v1/leads/${S.missedLeadId}/assign`, MEMBER2, { expected_version: unassignedVersion, owner_id: 'me' }));
 
   let d = (await api('GET', `/api/v1/leads/${S.danaId}`, OWNER)).body.data;
   if (d.owner?.user_id !== S.ownerId) {

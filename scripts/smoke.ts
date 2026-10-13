@@ -1,5 +1,5 @@
 // Smoke test of the built bundles: embedded PostgreSQL -> migrations -> dist/server.js + dist/main.js -> HTTP.
-import { mkdtempSync } from 'node:fs';
+import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawn } from 'node:child_process';
@@ -11,7 +11,9 @@ const root = process.cwd();
 const req = createRequire(join(root, 'apps/api/package.json'));
 const { default: EmbeddedPostgres } = await import(pathToFileURL(req.resolve('embedded-postgres')).href);
 const port = 26000 + Math.floor(Math.random() * 5000);
-const pg = new EmbeddedPostgres({ databaseDir: mkdtempSync(join(tmpdir(), 'lgsmoke-')), user: 'postgres', password: 'pw', port, persistent: false, onLog: () => {}, onError: () => {} });
+// persistent: true + our own best-effort cleanup: embedded-postgres' own removal fails with EBUSY on Windows.
+const dataDir = mkdtempSync(join(tmpdir(), 'lgsmoke-'));
+const pg = new EmbeddedPostgres({ databaseDir: dataDir, user: 'postgres', password: 'pw', port, persistent: true, onLog: () => {}, onError: () => {} });
 await pg.initialise(); await pg.start(); await pg.createDatabase('smoke');
 await migrate(`postgres://postgres:pw@127.0.0.1:${port}/smoke`, () => {});
 await setRolePasswords(`postgres://postgres:pw@127.0.0.1:${port}/smoke`, { lg_app: 'pw', lg_scanner: 'pw' });
@@ -30,4 +32,5 @@ const lag: any = await (await fetch('http://127.0.0.1:3999/internal/v1/health'))
 console.log(JSON.stringify({ health: health.status, create_org: org.status, me_role: me.data.active_org?.role, outbox_lag_after_worker: lag.checks.outbox_lag_seconds }));
 api.kill(); worker.kill();
 await pg.stop();
+try { rmSync(dataDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }); } catch { /* best effort */ }
 process.exit(0);

@@ -40,7 +40,7 @@ async function startDatabase(): Promise<{ adminUrl: string; host: string; port: 
   const { default: EmbeddedPostgres } = await import('embedded-postgres');
   const dir = mkdtempSync(join(tmpdir(), 'lgpg-'));
   const port = 15000 + Math.floor(Math.random() * 20000);
-  const server = new EmbeddedPostgres({ databaseDir: dir, user: 'postgres', password: 'postgres', port, persistent: false, onLog: () => {}, onError: () => {} });
+  const server = new EmbeddedPostgres({ databaseDir: dir, user: 'postgres', password: 'postgres', port, persistent: true, onLog: () => {}, onError: () => {} });
   await server.initialise();
   await server.start();
   await server.createDatabase(dbName);

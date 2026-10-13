@@ -6,17 +6,10 @@ import { emit, effectiveState, getSubscription, loadOrgSettings, type Db } from 
 import type { Deps } from '../deps.ts';
 import { defineRoute } from '../lib/route.ts';
 import { limitsView, usage } from '../lib/usage.ts';
+import { setupProgress } from '../lib/setup.ts';
 
 function hoursProblems(days: DayHours[]): Record<string, string> {
   return Object.fromEntries(validateDays(days).map(p => [p.path, p.message]));
-}
-
-async function setupProgress(db: Db) {
-  const r = await db.one<{ verified: number; team: number }>(
-    `SELECT (SELECT count(*)::int FROM lg.sources WHERE status IN ('verified','failing')) AS verified,
-            ((SELECT count(*)::int FROM lg.memberships) - 1 + (SELECT count(*)::int FROM lg.invitations WHERE status IN ('pending','accepted'))) AS team`);
-  const sourceVerified = r.verified > 0, teamInvited = r.team > 0;
-  return { org_created: true, source_verified: sourceVerified, team_invited: teamInvited, complete: sourceVerified && teamInvited };
 }
 
 async function openLeadCount(db: Db): Promise<number> {

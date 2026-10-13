@@ -89,9 +89,8 @@ export async function cancelPendingAlerts(db: Db, leadId: string): Promise<numbe
       RETURNING d.alert_id`, [leadId]);
   const ids = [...new Set(cancelled.map(r => r.alert_id))];
   if (ids.length) await db.q(`UPDATE lg.alerts SET state = 'cancelled' WHERE id = ANY($1::uuid[])`, [ids]);
-  // Remaining open alerts of a handled lead are closed (their deliveries already reached a final state or are in flight).
+  // The lead is handled: any remaining open alerts are closed (their deliveries are final or already in flight).
   await db.q(`UPDATE lg.alerts SET state = 'closed' WHERE lead_id = $1 AND state = 'open'`, [leadId]);
-  // Count alerts whose pending in-app/escalation work was stopped, including in-app deliveries not yet acknowledged.
   return ids.length;
 }
 

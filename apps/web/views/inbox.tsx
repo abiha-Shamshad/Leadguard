@@ -8,7 +8,7 @@ import { useSession } from '@/lib/session';
 import { useCommand, useInvalidate, useOrgQuery } from '@/lib/hooks';
 import { relativeMinutes } from '@/lib/format';
 import type { Inbox, InboxItem, InboxSection } from '@/lib/types';
-import { Badge, Button, Card, Dialog, Empty, ErrorView, Loading, Notice, PageHead } from '@/components/ui';
+import { Badge, Button, Card, Dialog, ErrorView, Loading, Notice, PageHead } from '@/components/ui';
 import { ActivityForm } from '@/components/activity-form';
 
 const TITLES: Record<InboxSection, { title: string; empty: string }> = {
@@ -120,6 +120,3 @@ function SectionList({ section, data, view, onLog, onChanged }: { section: Inbox
   );
 }
 
-export function EmptyInbox() {
-  return <Empty title="All caught up" />;
-}

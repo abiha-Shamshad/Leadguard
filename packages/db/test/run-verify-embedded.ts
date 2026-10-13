@@ -13,7 +13,7 @@ const { default: EmbeddedPostgres } = await import(pathToFileURL(require.resolve
 const dir = mkdtempSync(join(tmpdir(), 'lgverify-'));
 const port = 25000 + Math.floor(Math.random() * 10000);
 const pw = 'verify-only';
-const server = new EmbeddedPostgres({ databaseDir: dir, user: 'postgres', password: pw, port, persistent: false, onLog: () => {}, onError: () => {} });
+const server = new EmbeddedPostgres({ databaseDir: dir, user: 'postgres', password: pw, port, persistent: true, onLog: () => {}, onError: () => {} });
 let code = 1;
 try {
   await server.initialise();

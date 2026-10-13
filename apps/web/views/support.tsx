@@ -5,7 +5,7 @@ import { useSession } from '@/lib/session';
 import { useCommand, useInvalidate, useOrgQuery } from '@/lib/hooks';
 import { formatInZone } from '@/lib/format';
 import { Badge, Banner, Button, Card, CopyField, ErrorView, Loading, Notice, PageHead, Select, TextInput } from '@/components/ui';
-import { LIMITS, MESSAGES, PATTERNS } from '@/lib/limits';
+import { LIMITS } from '@/lib/limits';
 
 interface Grant { grant_id: string; scope: string; reason: string; granted_by: string | null; starts_at: string; expires_at: string; revoked_at: string | null; status: string; accesses: number }
 

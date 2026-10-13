@@ -2,7 +2,7 @@
 import type { FastifyInstance } from 'fastify';
 import { DateTime } from 'luxon';
 import { AppError, isoOrNull, isoSeconds, pageQuery, summaryQuery } from '@leadguard/contracts';
-import { businessMinutesBetween, formatLocal } from '@leadguard/domain';
+import { businessMinutesBetween } from '@leadguard/domain';
 import { effectiveState, getSubscription, loadOrgSettings, type Db, type OrgSettings } from '@leadguard/db';
 import type { Deps } from '../deps.ts';
 import { defineRoute } from '../lib/route.ts';
@@ -206,5 +206,4 @@ export function registerDashboard(app: FastifyInstance, deps: Deps): void {
       };
     },
   });
-  void formatLocal;
 }

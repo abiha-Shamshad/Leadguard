@@ -9,7 +9,7 @@ import { formatInZone, SOURCE_STATUS } from '@/lib/format';
 import type { Page, SourceDetail } from '@/lib/types';
 import { Badge, Banner, Button, Card, CopyField, Dialog, ErrorView, Loading, Notice, PageHead, TextInput } from '@/components/ui';
 import { VerificationChecklist } from '@/components/verification';
-import { LIMITS, MESSAGES, PATTERNS } from '@/lib/limits';
+import { LIMITS } from '@/lib/limits';
 
 interface Attempt { event_id: string; received_at: string; outcome: string; reason?: string; lead_id: string | null; dedupe_key?: string; auth_mode?: string }
 

@@ -231,7 +231,7 @@ function Timeline({ leadId }: { leadId: string }) {
   const [cursor, setCursor] = useState<string | null | undefined>(undefined);
   const next = cursor === undefined ? q.data?.next_cursor : cursor;
   return (
-    <Card title="Timeline" className="" >
+    <Card title="Timeline">
       {q.isPending ? <Loading label="Loading timeline" /> : q.error ? <ErrorView error={q.error} compact onReload={() => void q.refetch()} /> : (
         <>
           <ol className="timeline">

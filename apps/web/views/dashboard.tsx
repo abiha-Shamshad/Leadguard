@@ -30,7 +30,7 @@ function fixLink(e: Exception): string {
 
 function Stat({ label, value, def }: { label: string; value: React.ReactNode; def?: string }) {
   return (
-    <div className="card stat" title={def} tabIndex={def ? 0 : undefined} aria-describedby={undefined}>
+    <div className="card stat" title={def} tabIndex={def ? 0 : undefined}>
       <div className="value">{value ?? '-'}</div>
       <div className="label">{label}</div>
       {def ? <span className="sr-only">Definition: {def}</span> : null}

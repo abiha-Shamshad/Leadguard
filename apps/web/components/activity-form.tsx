@@ -4,7 +4,7 @@ import { useCommand } from '@/lib/hooks';
 import { localInputValue } from '@/lib/format';
 import { useSession } from '@/lib/session';
 import { Button, ErrorView, Select, TextArea, TextInput } from './ui';
-import { LIMITS, MESSAGES, PATTERNS } from '@/lib/limits';
+import { LIMITS } from '@/lib/limits';
 
 const OUTCOMES = [
   { value: 'no_answer', label: 'No answer' },
